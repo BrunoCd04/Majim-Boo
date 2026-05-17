@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Majim Boo">
 <meta name="description" content="Projeto Majim Boo — Ficha de treino gamificada DBZ">
+<meta name="author" content="BJ Personal — Bruno Jandrey">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.svg">
 <title>⚡ Projeto Majim Boo</title>
@@ -121,6 +122,20 @@ section{padding:3rem 0}
 .btn-mark:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(255,61,154,.4)}
 .btn-mark:active{transform:translateY(1px)}
 .btn-mark.done-today{background:rgba(68,221,136,.12);border:1px solid rgba(68,221,136,.3);box-shadow:none;color:var(--ok)}
+.load-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);color:var(--go);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;transition:all var(--trans);-webkit-tap-highlight-color:transparent}
+.load-btn.has-load{background:rgba(255,215,0,.2);border-color:rgba(255,215,0,.5);box-shadow:0 0 8px rgba(255,215,0,.2)}
+.load-row{display:none;padding:.55rem .5rem .55rem 2.8rem;gap:.5rem;align-items:center;background:rgba(255,215,0,.03);border-bottom:1px solid var(--fa);flex-wrap:wrap}
+.load-row.open{display:flex}
+.load-inp{width:70px;padding:.35rem .5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--tx);font-family:'Rajdhani',sans-serif;font-size:.85rem;text-align:center;outline:none;-webkit-tap-highlight-color:transparent}
+.load-inp:focus{border-color:rgba(255,215,0,.45)}
+.load-lbl{font-size:.72rem;color:var(--mu)}
+.volume-card{margin-top:1rem;padding:1rem 1.25rem;background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.18);border-radius:14px;text-align:center;display:none}
+.volume-title{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--go);margin-bottom:.2rem}
+.volume-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--go);line-height:1.1}
+.volume-compare{font-size:.82rem;color:var(--tx);margin-top:.35rem}
+.btn-mark-panel{width:100%;padding:1rem;background:linear-gradient(135deg,var(--pud),var(--pk));border:none;border-radius:14px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.1em;cursor:pointer;box-shadow:0 4px 30px rgba(255,61,154,.3);transition:all var(--trans);margin-top:.75rem;min-height:var(--touch);-webkit-tap-highlight-color:transparent}
+.btn-mark-panel:disabled{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);box-shadow:none;color:var(--mu);cursor:not-allowed;opacity:.8}
+.btn-mark-panel.done-today{background:rgba(68,221,136,.12);border:1px solid rgba(68,221,136,.3);box-shadow:none;color:var(--ok)}
 /* CHART */
 .chart-card{background:var(--cd);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.25rem}
 .chart-svg-wrap{width:100%;overflow:hidden}
@@ -322,6 +337,7 @@ section{padding:3rem 0}
   </div>
   <div class="hero-badge">⚡ Power Level: Over 9000 ⚡</div>
   <h1 class="hero-title">PROJETO<br>MAJIM BOO</h1>
+  <p style="font-size:.65rem;letter-spacing:.3em;color:rgba(255,255,255,.3);text-transform:uppercase;margin-top:-.5rem;margin-bottom:1rem">by BJ Personal</p>
   <p class="hero-sub">Macrociclo de Transformação · 12 Meses</p>
   <div class="hero-chip">
     <div class="hero-name">⚔️ Hugo Ruhan Pereira</div>
@@ -375,7 +391,7 @@ section{padding:3rem 0}
         <div class="cal-wd">Qua</div><div class="cal-wd">Qui</div><div class="cal-wd">Sex</div><div class="cal-wd">Sáb</div>
       </div>
       <div class="cal-grid" id="cal-grid" role="grid" aria-label="Dias do mês"></div>
-      <button type="button" class="btn-mark" id="btn-mark" data-action="toggle-today">⚡ MARCAR TREINO DE HOJE</button>
+
     </div>
     <div class="chart-card" role="region" aria-label="Gráfico de XP semanal">
       <div class="chart-svg-wrap">
@@ -433,6 +449,7 @@ section{padding:3rem 0}
 <footer class="footer">
   <div class="footer-logo">⚡ PROJETO MAJIM BOO ⚡</div>
   <div class="footer-txt">Macrociclo 2026–2027 · Hugo Ruhan Pereira · Mesociclo 1 — Fase Saiyan</div>
+  <div class="footer-txt" style="margin-top:.4rem;font-size:.7rem;color:rgba(255,255,255,.25);letter-spacing:.15em">© 2026 · BJ Personal</div>
   <div class="footer-disc">Documento de uso exclusivo do treinador. Não substitui acompanhamento médico.</div>
 </footer>
 <script>
@@ -441,6 +458,7 @@ const DAY_MS      = 86_400_000;
 const XP_PER_DAY  = 100;
 const STORAGE_KEY = 'mb_v3';
 const NOTES_KEY   = 'mb_notes_v1';
+const LOADS_KEY   = 'mb_loads_v1';
 const TIMER_CIRC  = 283;
 const MONTHS_PT   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -465,11 +483,10 @@ const DAYS = [
     aerobic:null,
     groups:[
       { t:'🏋️ Compostos — Costas', ex:[
-        ['Puxada Frontal Barra Larga','Até clavícula · subida controlada 3s','4 × 12'],
+        ['Puxada Alta com Barra (Aberta)','Até clavícula · descida controlada 3s','4 × 12'],
         ['Remada Curvada com Barra','Tronco 45° · puxar ao umbigo','4 × 10'],
         ['Remada Unilateral com Haltere','Cotovelo alto · amplitude completa','3 × 12']]},
       { t:'🎯 Isolamento — Costas', ex:[
-        ['Pullover com Haltere','Foco no grande dorsal','3 × 12'],
         ['Remada Triângulo Polia Baixa','Escápulas contraídas no pico','3 × 15']]},
       { t:'💪 Bíceps', ex:[
         ['Rosca Direta com Barra','Cotovelos fixos · supinação total','4 × 12'],
@@ -482,23 +499,23 @@ const DAYS = [
         ['Agachamento Livre','Aquecimento progressivo · profundidade segura','4 × 12'],
         ['Leg Press 45°','Pés na largura dos ombros','4 × 12']]},
       { t:'🎯 Isolamento — Quadríceps / Posterior', ex:[
-        ['Cadeira Extensora','Contração no topo · eccêntrico 3s','3 × 15'],
-        ['Stiff com Barra','Coluna neutra · alongamento isquiotibiais','3 × 12'],
-        ['Mesa Flexora Bilateral','Amplitude total · sem soluçar','3 × 15']]},
+        ['Cadeira Extensora','Contração no topo · excêntrico 3s','3 × 15'],
+        ['Stiff com Barra','Coluna neutra · alongamento de isquiotibiais','3 × 12'],
+        ['Cadeira Flexora','Amplitude total · sem soltar o peso','3 × 15']]},
       { t:'🦵 Panturrilha', ex:[
-        ['Panturrilha em Pé (Smith)','Pausa amplitude mínima · explosivo','4 × 15']]}]},
+        ['Panturrilha no Leg 45°','Pausa na amplitude máxima · explosivo','4 × 15']]}]},
   { label:'QUI', hasAero:true, day:'Quinta-Feira', title:'OMBROS + CORE', sub:'Push B · Volume Moderado · + Aeróbico',
     aerobic:{ dur:'30 min', fc:'109–127 bpm', type:'Elíptico ou Esteira inclinada', note:'Baixo volume muscular → ideal para lipólise sustentada.' },
     groups:[
       { t:'🏋️ Compostos — Ombros', ex:[
-        ['Desenvolvimento com Halteres','Sentado · não hiperestender lombar','4 × 12'],
+        ['Desenvolvimento com Halteres','Sentado · não hiperextender a lombar','4 × 12'],
         ['Desenvolvimento Arnold','Rotação pronação→supinação','3 × 10']]},
       { t:'🎯 Isolamento — Ombros', ex:[
         ['Elevação Lateral com Halteres','Derramar água do copo · cotovelo flex.','4 × 15'],
         ['Face Pull na Polia','Altura dos olhos · rotação externa','4 × 15'],
         ['Encolhimento de Ombros','Trapézio superior · não rodar','3 × 15']]},
       { t:'🧱 Core — Abdômen', ex:[
-        ['Prancha Isométrica','Bacia neutra · respiração diafragmática','4 × 60s'],
+        ['Abdominal Supra','Elevação do tronco · contração no topo','4 × 20'],
         ['Abdominal Crunch na Polia','Flexão de coluna — não de quadril','4 × 20'],
         ['Abdominal Bicicleta','Rotação cotovelo/joelho oposto','3 × 20']]}]},
   { label:'SEX', hasAero:false, day:'Sexta-Feira', title:'COSTAS + PEITO', sub:'Volume B · Supersets opcionais · Sem Aeróbico',
@@ -506,8 +523,8 @@ const DAYS = [
     tip:'5° dia consecutivo. Se rendimento cair mais de 20% vs segunda, reduzir 1 série por exercício — gestão inteligente de fadiga.',
     groups:[
       { t:'🏋️ Costas — Ênfase Dorsal', ex:[
-        ['Barra Fixa ou Puxada Assistida','Amplitude máxima · descer completamente','4 × máx.'],
-        ['Puxada com Corda na Polia','Separar a corda no final','3 × 12'],
+        ['Puxada Alta com Barra (Aberta)','Amplitude máxima · descida controlada','4 × 12'],
+        ['Puxada Alta com Triângulo','Cotovelos para baixo · contração no pico','3 × 12'],
         ['Remada Triângulo Baixo','Escápulas contraídas · pausa no pico','3 × 15']]},
       { t:'🏋️ Peito — Ênfase Inferior / Medial', ex:[
         ['Supino Declinado com Halteres','Porção esternal inferior','4 × 12'],
@@ -520,12 +537,12 @@ const DAYS = [
         ['Leg Press 45° (pés altos)','Ênfase posterior/glúteo','4 × 15'],
         ['Hack Squat','Alternativa ao livre · bom para joelhos','3 × 12'],
         ['Cadeira Adutora','Estabilidade do joelho · simetria','3 × 15'],
-        ['Mesa Flexora Unilateral','Cada perna isolada · corrigir assimetrias','3 × 12'],
+        ['Cadeira Flexora','Cada perna isolada · corrigir assimetrias','3 × 12'],
         ['Panturrilha Sentado (Sóleo)','Pausa 2s na amplitude máxima','4 × 15']]},
       { t:'💪 Braços — Bíceps + Tríceps', ex:[
         ['Rosca Concentrada com Haltere','Cotovelo apoiado no joelho','3 × 12'],
         ['Tríceps Francês (Skull Crusher)','Barra EZ ou halteres','3 × 12'],
-        ['Superset: Rosca 21 + Coice','Sem descanso · finisher de braço','3 × 21+12']]}]},
+        ['Rosca Direta + Tríceps Corda','Sem descanso entre os dois · finisher de braço','3 × 12+15']]}]},
   { label:'DOM', hasAero:true, day:'Domingo', title:'RECUPERAÇÃO ATIVA', sub:'Sem pesos · Aeróbico Leve + Mobilidade',
     aerobic:{ dur:'45–60 min', fc:'90–115 bpm', type:'Caminhada, Bicicleta ou Natação', note:'Para diabéticos: essencial para controle glicêmico do fim de semana.' },
     groups:[
@@ -556,7 +573,7 @@ const LEVELS = [
 let state = Object.freeze({
   days:[], notes:{}, calYear:new Date().getFullYear(), calMonth:new Date().getMonth(),
   activeTab:DOW_TO_TAB[new Date().getDay()]??0, prevLevel:1,
-  loading:true, saving:false, checks:{},
+  loading:true, saving:false, checks:{}, loads:{},
   timerOpen:false, timerDur:0, timerRem:0, timerRunning:false,
 });
 let prevState = {};
@@ -606,6 +623,15 @@ async function loadNotes() {
   } catch { return {}; }
 }
 
+async function loadLoads() {
+  try {
+    const raw = await readStorage(LOADS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  } catch { return {}; }
+}
+
 function enqueueSave(days) {
   setState({ saving:true });
   saveQueue = saveQueue.then(async () => {
@@ -633,6 +659,48 @@ function today() {
 }
 function pad(n) { return String(n).padStart(2,'0'); }
 function getLevel(xp) { return [...LEVELS].reverse().find(l => xp >= l.xp) ?? LEVELS[0]; }
+
+const VOLUME_REFS=[
+  {min:0,     emoji:'🐕', label:'um cachorro golden retriever'},
+  {min:200,   emoji:'🏍️', label:'uma moto esportiva'},
+  {min:800,   emoji:'🐎', label:'um cavalo adulto'},
+  {min:1500,  emoji:'🐄', label:'uma vaca nelore'},
+  {min:3000,  emoji:'🚗', label:'uma caminhonete pickup'},
+  {min:6000,  emoji:'🐘', label:'um elefante africano'},
+  {min:10000, emoji:'🦕', label:'um T-Rex'},
+  {min:15000, emoji:'🚌', label:'um ônibus escolar cheio'},
+  {min:25000, emoji:'🐋', label:'uma baleia jubarte'},
+  {min:40000, emoji:'✈️', label:'um Boeing 737 vazio'},
+];
+
+function parsePrescription(str) {
+  const m=str.match(/(\d+)\s*[×x]\s*(.+)/);
+  if (!m) return {sets:1,reps:null};
+  const sets=parseInt(m[1]), repStr=m[2].trim();
+  const compound=repStr.match(/^(\d+)\+(\d+)/);
+  if (compound) return {sets,reps:parseInt(compound[1])+parseInt(compound[2])};
+  const plain=repStr.match(/^(\d+)/);
+  return plain?{sets,reps:parseInt(plain[1])}:{sets,reps:null};
+}
+
+function calcVolume(tabIdx) {
+  let total=0;
+  DAYS[tabIdx].groups.forEach((g,gIdx)=>{
+    g.ex.forEach((ex,eIdx)=>{
+      const load=state.loads[tabIdx+'-'+gIdx+'-'+eIdx];
+      if (!load||!load.w) return;
+      const {sets,reps}=parsePrescription(ex[2]);
+      const r=load.r!==undefined?load.r:reps;
+      if (!r) return;
+      total+=load.w*sets*r;
+    });
+  });
+  return total;
+}
+
+function getVolumeRef(kg) {
+  return [...VOLUME_REFS].reverse().find(r=>kg>=r.min)??VOLUME_REFS[0];
+}
 function calcXP(days) { return days.length * XP_PER_DAY; }
 function calcStreak(days) {
   if (!days.length) return 0;
@@ -763,6 +831,13 @@ function render() {
   if (s.days !== p.days) { renderMarkButton(s); renderXPChart(s.days); }
   if (s.activeTab !== p.activeTab) renderTabSelection(s.activeTab, p.activeTab);
   if (s.checks !== p.checks) renderChecks(s,p);
+  if (s.loads !== p.loads) {
+    DAYS.forEach((_,i)=>renderVolumeCard(i));
+    Object.keys({...s.loads,...(p.loads||{})}).forEach(key=>{
+      const btn=document.querySelector('[data-load-key="'+key+'"][data-action="toggle-load"]');
+      if (btn) btn.classList.toggle('has-load',!!(s.loads[key]&&s.loads[key].w));
+    });
+  }
   if (s.timerOpen!==p.timerOpen||s.timerRunning!==p.timerRunning||s.timerRem!==p.timerRem||s.timerDur!==p.timerDur) renderTimer(s);
   if (s.saving !== p.saving && s.saving) showSaveDot('saving');
 }
@@ -815,10 +890,13 @@ function renderCalendar(s) {
 }
 
 function renderMarkButton(s) {
-  const btn=document.getElementById('btn-mark'), isTd=s.days.includes(today());
-  btn.textContent=isTd?'✅ TREINO DE HOJE CONCLUÍDO! (toque para desmarcar)':'⚡ MARCAR TREINO DE HOJE';
+  const btn=document.getElementById('btn-mark-panel');
+  if (!btn) return;
+  const isTd=s.days.includes(today());
+  btn.textContent=isTd?'✅ TREINO CONCLUÍDO! (toque para desmarcar)':'⚡ MARCAR TREINO DE HOJE';
   btn.classList.toggle('done-today',isTd);
   btn.setAttribute('aria-pressed',isTd?'true':'false');
+  if (isTd) btn.disabled=false;
 }
 
 function renderXPChart(days) {
@@ -852,6 +930,19 @@ function renderXPChart(days) {
     const totalXP=calcXP(days), bestXP=Math.max(...data.map(w=>w.xp),0);
     meta.textContent=bestXP>0?'Melhor semana: '+bestXP+' XP  ·  Total acumulado: '+totalXP+' XP':'Nenhum treino registrado ainda — vai lá!';
   }
+}
+
+function renderVolumeCard(tabIdx) {
+  const card=document.getElementById('volume-card-'+tabIdx);
+  if (!card) return;
+  const vol=calcVolume(tabIdx);
+  if (vol===0) { card.style.display='none'; return; }
+  card.style.display='block';
+  const ref=getVolumeRef(vol);
+  const numEl=document.getElementById('volume-num-'+tabIdx);
+  const cmpEl=document.getElementById('volume-compare-'+tabIdx);
+  if (numEl) numEl.textContent=vol.toLocaleString('pt-BR')+' kg movimentados';
+  if (cmpEl) cmpEl.textContent=ref.emoji+' Equivale ao peso de '+ref.label+'!';
 }
 
 function renderTabSelection(curr, prev) {
@@ -898,6 +989,10 @@ function updateAllTabProgress() {
     const lbl=document.getElementById('prog-label-'+tabIdx);
     if (bar) bar.style.width=pct+'%';
     if (lbl) lbl.textContent=doneEx>0?(pct===100?'🏆 Treino concluído!':doneEx+' de '+totalEx+' exercícios'):totalEx+' exercícios';
+    if (tabIdx===(DOW_TO_TAB[new Date().getDay()]??0)) {
+      const btn=document.getElementById('btn-mark-panel');
+      if (btn&&!btn.classList.contains('done-today')) btn.disabled=doneEx<totalEx;
+    }
   });
 }
 
@@ -960,7 +1055,9 @@ function buildTabsAndPanels() {
       h+='<div class="ex-group"><div class="ex-group-title">'+group.t+'</div>';
       group.ex.forEach((ex,eIdx) => {
         const key=tabIdx+'-'+gIdx+'-'+eIdx;
-        h+='<div class="ex-row" role="checkbox" aria-checked="false" tabindex="0" data-action="toggle-ex" data-check-key="'+key+'" data-tab="'+tabIdx+'" data-g="'+gIdx+'" data-e="'+eIdx+'" aria-label="'+ex[0]+'"><div class="ex-check" aria-hidden="true"></div><div class="ex-num">'+(eIdx+1)+'</div><div class="ex-name">'+ex[0]+'<small>'+ex[1]+'</small></div><div class="ex-sets">'+ex[2]+'</div><button type="button" class="ex-timer-btn" data-action="timer-toggle" aria-label="Timer de descanso">⏱</button></div>';
+        const {reps}=parsePrescription(ex[2]);
+        h+='<div class="ex-row" role="checkbox" aria-checked="false" tabindex="0" data-action="toggle-ex" data-check-key="'+key+'" data-tab="'+tabIdx+'" data-g="'+gIdx+'" data-e="'+eIdx+'" aria-label="'+ex[0]+'"><div class="ex-check" aria-hidden="true"></div><div class="ex-num">'+(eIdx+1)+'</div><div class="ex-name">'+ex[0]+'<small>'+ex[1]+'</small></div><div class="ex-sets">'+ex[2]+'</div><button type="button" class="ex-timer-btn" data-action="timer-toggle" aria-label="Timer de descanso">⏱</button><button type="button" class="load-btn" data-action="toggle-load" data-load-key="'+key+'" aria-label="Registrar carga">⚖️</button></div>';
+        h+='<div class="load-row" id="load-row-'+key+'"><span class="load-lbl">Carga:</span><input class="load-inp load-w" type="number" min="0" step="0.5" placeholder="kg" data-load-key="'+key+'" data-field="w" aria-label="Carga em kg"><span class="load-lbl">kg ×</span><input class="load-inp load-r" type="number" min="0" placeholder="reps" data-load-key="'+key+'" data-field="r" value="'+(reps||'')+'" aria-label="Repetições realizadas"><span class="load-lbl">reps/série</span></div>';
       });
       h+='</div>';
     });
@@ -969,6 +1066,10 @@ function buildTabsAndPanels() {
     // Notes section
     const noteKey=tabIdx+'-'+todayStr;
     h+='<div class="notes-section"><div class="notes-header"><span class="notes-title">📝 Notas da Sessão</span><span class="notes-date">'+todayStr+'</span></div><textarea class="notes-area" id="notes-ta-'+tabIdx+'" data-tab="'+tabIdx+'" placeholder="Registre cargas, observações ou como o aluno se sentiu hoje..." aria-label="Notas da sessão de '+day.day+'"></textarea><div class="notes-status" id="notes-ind-'+tabIdx+'" aria-live="polite">✓ Salvo</div></div>';
+    h+='<div class="volume-card" id="volume-card-'+tabIdx+'"><div class="volume-title">⚖️ Volume do treino</div><div class="volume-num" id="volume-num-'+tabIdx+'">0 kg</div><div class="volume-compare" id="volume-compare-'+tabIdx+'"></div></div>';
+    if (tabIdx===(DOW_TO_TAB[new Date().getDay()]??0)) {
+      h+='<button type="button" class="btn-mark-panel" id="btn-mark-panel" data-action="toggle-today" disabled>⚡ MARCAR TREINO DE HOJE</button>';
+    }
     panel.innerHTML=h;
     pf.appendChild(panel);
   });
@@ -988,15 +1089,38 @@ function handleClick(e) {
     }
     case 'toggle-today': {
       const td=today();
-      const days=state.days.includes(td)?state.days.filter(d=>d!==td):[...state.days,td];
-      if (!state.days.includes(td)) { showToast('+100 XP · Treino marcado!','ok'); vibrate([20,10,20]); }
-      setState({days}); enqueueSave(days); break;
+      const isMarking=!state.days.includes(td);
+      const days=isMarking?[...state.days,td]:state.days.filter(d=>d!==td);
+      if (isMarking) {
+        const prefix=state.activeTab+'-';
+        const checks=Object.fromEntries(Object.entries(state.checks).filter(([k])=>!k.startsWith(prefix)));
+        setState({days,checks}); enqueueSave(days);
+        showToast('+100 XP · Treino marcado!','ok'); vibrate([20,10,20]);
+      } else {
+        setState({days}); enqueueSave(days);
+      }
+      break;
     }
     case 'cal-prev': setState({calMonth:state.calMonth===0?11:state.calMonth-1,calYear:state.calMonth===0?state.calYear-1:state.calYear}); break;
     case 'cal-next': setState({calMonth:state.calMonth===11?0:state.calMonth+1,calYear:state.calMonth===11?state.calYear+1:state.calYear}); break;
     case 'set-tab':   setState({activeTab:parseInt(el.dataset.idx)}); vibrate([8]); break;
     case 'toggle-acc': { const acc=el.closest('.acc'); if(!acc) return; const open=acc.classList.toggle('open'); el.setAttribute('aria-expanded',open?'true':'false'); break; }
     case 'toggle-ex': { const key=el.dataset.checkKey; const next={...state.checks}; next[key]?delete next[key]:(next[key]=true); setState({checks:next}); vibrate([10]); break; }
+    case 'toggle-load': {
+      const key=el.dataset.loadKey;
+      const row=document.getElementById('load-row-'+key);
+      if (!row) break;
+      const isOpen=row.classList.toggle('open');
+      if (isOpen) {
+        const load=state.loads[key]||{};
+        const wInp=row.querySelector('.load-w');
+        const rInp=row.querySelector('.load-r');
+        if (wInp&&load.w!==undefined) wInp.value=load.w;
+        if (rInp&&load.r!==undefined) rInp.value=load.r;
+        if (wInp) setTimeout(()=>wInp.focus(),50);
+      }
+      break;
+    }
     case 'timer-toggle': setState({timerOpen:!state.timerOpen}); vibrate([10]); break;
     case 'timer-start': { const dur=parseInt(el.dataset.dur); startTimer(dur); break; }
     case 'timer-close': stopTimer(); break;
@@ -1008,6 +1132,16 @@ function handleClick(e) {
 
 function handleInput(e) {
   const ta=e.target;
+  if (ta.classList.contains('load-inp')) {
+    const key=ta.dataset.loadKey, field=ta.dataset.field;
+    const loads={...state.loads};
+    if (!loads[key]) loads[key]={};
+    const v=parseFloat(ta.value);
+    loads[key]={...loads[key],[field]:isNaN(v)?undefined:v};
+    setState({loads});
+    writeStorage(LOADS_KEY, JSON.stringify(loads));
+    return;
+  }
   if (!ta.classList.contains('notes-area')) return;
   const tabIdx=parseInt(ta.dataset.tab);
   const key=tabIdx+'-'+today();
@@ -1100,9 +1234,9 @@ function initPWA() {
   document.addEventListener('click',   handleClick);
   document.addEventListener('input',   handleInput);
   document.addEventListener('keydown', handleKeydown);
-  const [days, notes] = await Promise.all([loadDays(), loadNotes()]);
+  const [days, notes, loads] = await Promise.all([loadDays(), loadNotes(), loadLoads()]);
   const xp=calcXP(days), lv=getLevel(xp);
-  setState({ days, notes, prevLevel:lv.lv, loading:false });
+  setState({ days, notes, loads, prevLevel:lv.lv, loading:false });
   loadNoteIntoTextarea(state.activeTab);
   renderXPChart(days);
 })();
